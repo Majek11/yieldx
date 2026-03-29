@@ -1,8 +1,8 @@
 import { useState, useEffect } from 'react';
 import { useNavigate, useLocation } from 'react-router-dom';
 import {
-    Copy, Check, ArrowDown, ArrowUp, Plus, Trash2, Tag, Upload, Clock, AlertCircle,
-    Wallet as WalletIcon, QrCode, ChevronDown, ShieldAlert, X, FileCheck
+    Copy, Check, ArrowDown, ArrowUp, Plus, Trash2, Tag, Clock, AlertCircle,
+    Wallet as WalletIcon, QrCode, ChevronDown, ShieldAlert, X
 } from 'lucide-react';
 import { toast } from 'sonner';
 import CryptoIcon from '@/components/CryptoIcon';
@@ -93,17 +93,15 @@ export default function Wallet() {
     }, [location.hash]);
 
     // Deposit state
-    const [depositMethod, setDepositMethod] = useState<'crypto' | 'receipt' | null>(null);
-    const [depositStep, setDepositStep] = useState<'method' | 'confirm' | 'details' | 'receipt' | 'pending'>('method');
+    const [depositMethod, setDepositMethod] = useState<'crypto' | null>(null);
+    const [depositStep, setDepositStep] = useState<'method' | 'confirm' | 'details' | 'pending'>('method');
     const [depositAmount, setDepositAmount] = useState('');
     const [selectedChain, setSelectedChain] = useState(CHAINS[0]);
     const [showQr, setShowQr] = useState(false);
-    const [receiptFile, setReceiptFile] = useState<File | null>(null);
-    const [uploading, setUploading] = useState(false);
     const [currentDepositId, setCurrentDepositId] = useState<string | null>(null);
     const [depositRequests, setDepositRequests] = useState<DepositRequest[]>([
-        { id: 'dep-1', timestamp: Date.now() - 86400000 * 2, amount: 500, method: 'receipt', paymentMethod: 'bank_transfer', status: 'confirmed', receiptFile: { name: 'transfer_proof.pdf', size: 245000 } },
-        { id: 'dep-2', timestamp: Date.now() - 86400000, amount: 1000, method: 'receipt', paymentMethod: 'credit_card', status: 'pending', receiptFile: { name: 'invoice_12345.pdf', size: 189000 } },
+        { id: 'dep-1', timestamp: Date.now() - 86400000 * 2, amount: 500, method: 'crypto', currency: 'ETH', paymentMethod: 'ETH', status: 'confirmed' },
+        { id: 'dep-2', timestamp: Date.now() - 86400000, amount: 1000, method: 'crypto', currency: 'BTC', paymentMethod: 'BTC', status: 'pending' },
     ]);
     // Withdraw state
     const [withdrawAmount, setWithdrawAmount] = useState('');
@@ -130,30 +128,6 @@ export default function Wallet() {
         setWithdrawing(false);
         toast.success(`Withdrawal of $${withdrawAmount} submitted — processing in 1-2 business days`);
         setWithdrawAmount(''); setWithdrawAddress('');
-    };
-
-    const handleReceiptUpload = async () => {
-        if (!receiptFile) { toast.error('Please select a receipt file'); return; }
-        
-        setUploading(true);
-        await new Promise(r => setTimeout(r, 1200));
-        setUploading(false);
-
-        const newDeposit: DepositRequest = {
-            id: `dep-${Date.now()}`,
-            timestamp: Date.now(),
-            amount: Number(depositAmount),
-            method: 'crypto',
-            paymentMethod: depositMethod === 'receipt' ? 'bank_transfer' : selectedChain.symbol,
-            receiptFile: { name: receiptFile.name, size: receiptFile.size },
-            status: 'pending',
-        };
-
-        setDepositRequests(p => [newDeposit, ...p]);
-        setCurrentDepositId(newDeposit.id);
-        toast.success(`Payment confirmation received! Admin will review within 24 hours.`);
-        setDepositStep('pending');
-        setReceiptFile(null);
     };
 
     const addWallet = () => {
@@ -199,28 +173,34 @@ export default function Wallet() {
             {/* ── DEPOSIT ── */}
             {tab === 'deposit' && (
                 <div className="space-y-5">
-                    {/* STEP 1: Choose deposit method */}
+                    {/* STEP 1: Choose crypto network */}
                     {depositStep === 'method' && !depositMethod && (
-                        <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
-                            <button onClick={() => { setDepositMethod('crypto'); setDepositStep('confirm'); }}
-                                className="p-6 rounded-xl border-2 border-border/60 bg-secondary/20 hover:border-primary/60 hover:bg-primary/5 transition-all text-left group">
-                                <CryptoIcon symbol="BTC" size={40} />
-                                <p className="font-heading text-base font-semibold text-foreground mt-3 group-hover:text-primary transition-colors">Direct Crypto Deposit</p>
-                                <p className="text-muted-foreground text-sm mt-1">Send Bitcoin, Ethereum, or other crypto directly</p>
-                                <p className="text-primary text-xs font-medium mt-3">Fast confirmation →</p>
-                            </button>
-                            <button onClick={() => { setDepositMethod('receipt'); setDepositStep('confirm'); }}
-                                className="p-6 rounded-xl border-2 border-border/60 bg-secondary/20 hover:border-primary/60 hover:bg-primary/5 transition-all text-left group">
-                                <Upload className="w-10 h-10 text-primary" />
-                                <p className="font-heading text-base font-semibold text-foreground mt-3 group-hover:text-primary transition-colors">Bank Transfer / Card</p>
-                                <p className="text-muted-foreground text-sm mt-1">Transfer funds via bank or credit card</p>
-                                <p className="text-primary text-xs font-medium mt-3">24h approval →</p>
-                            </button>
+                        <div className="bg-card/60 backdrop-blur-md border border-border/60 rounded-2xl p-6 space-y-5">
+                            <div>
+                                <h3 className="font-heading text-lg font-semibold text-foreground">Crypto Deposit</h3>
+                                <p className="text-muted-foreground text-sm mt-1">Select a network and send cryptocurrency to your deposit address</p>
+                            </div>
+
+                            <div>
+                                <label className="block text-sm font-medium text-foreground mb-3">Select Network / Currency</label>
+                                <div className="grid grid-cols-2 sm:grid-cols-3 gap-3">
+                                    {CHAINS.map(c => (
+                                        <button key={c.id} onClick={() => { setSelectedChain(c); setDepositMethod('crypto'); setDepositStep('confirm'); }}
+                                            className="flex flex-col items-center gap-3 p-4 rounded-xl border-2 border-border/60 bg-secondary/20 hover:border-primary/60 hover:bg-primary/5 transition-all group">
+                                            <CryptoIcon symbol={c.symbol} size={40} />
+                                            <div className="text-center">
+                                                <p className="text-foreground text-sm font-semibold group-hover:text-primary transition-colors">{c.symbol}</p>
+                                                <p className="text-muted-foreground text-xs">{c.name.split('(')[0].trim()}</p>
+                                            </div>
+                                        </button>
+                                    ))}
+                                </div>
+                            </div>
                         </div>
                     )}
 
                     {/* STEP 2: Confirm amount & details */}
-                    {depositStep === 'confirm' && depositMethod && (
+                    {depositStep === 'confirm' && depositMethod === 'crypto' && (
                         <div className="bg-card/60 backdrop-blur-md border border-border/60 rounded-2xl p-6 space-y-5">
                             <div className="flex items-center justify-between">
                                 <h3 className="font-heading text-lg font-semibold text-foreground">Deposit Details</h3>
@@ -230,60 +210,22 @@ export default function Wallet() {
                                 </button>
                             </div>
 
-                            {depositMethod === 'crypto' ? (
-                                <>
-                                    <div>
-                                        <label className="block text-sm font-medium text-foreground mb-2">Select Network / Currency</label>
-                                        <div className="grid grid-cols-2 sm:grid-cols-3 gap-2">
-                                            {CHAINS.map(c => (
-                                                <button key={c.id} onClick={() => setSelectedChain(c)}
-                                                    className={`flex items-center gap-2.5 p-3 rounded-xl border text-left transition-all ${selectedChain.id === c.id ? 'border-primary/60 bg-primary/5' : 'border-border/60 hover:border-border bg-secondary/20'}`}>
-                                                    <CryptoIcon symbol={c.symbol} size={28} />
-                                                    <div className="min-w-0">
-                                                        <p className="text-foreground text-xs font-semibold truncate">{c.symbol}</p>
-                                                        <p className="text-muted-foreground text-[10px] truncate">{c.name.split('(')[0].trim()}</p>
-                                                    </div>
-                                                </button>
-                                            ))}
-                                        </div>
-                                    </div>
+                            <div>
+                                <label htmlFor="deposit-amt" className="block text-sm font-medium text-foreground mb-2">Amount (USD)</label>
+                                <div className="relative">
+                                    <span className="absolute left-4 top-1/2 -translate-y-1/2 text-muted-foreground font-semibold">$</span>
+                                    <input id="deposit-amt" type="number" placeholder="500" value={depositAmount}
+                                        onChange={e => setDepositAmount(e.target.value)}
+                                        className="w-full bg-background/80 border border-border rounded-xl pl-8 pr-4 py-3 text-sm text-foreground placeholder:text-muted-foreground/50 focus:outline-none focus:border-primary/60 transition-all" />
+                                </div>
+                                <p className="text-muted-foreground text-xs mt-2">Minimum: $10 | Maximum: $100,000</p>
+                            </div>
 
-                                    <div>
-                                        <label htmlFor="deposit-amt" className="block text-sm font-medium text-foreground mb-2">Amount (USD)</label>
-                                        <div className="relative">
-                                            <span className="absolute left-4 top-1/2 -translate-y-1/2 text-muted-foreground font-semibold">$</span>
-                                            <input id="deposit-amt" type="number" placeholder="500" value={depositAmount}
-                                                onChange={e => setDepositAmount(e.target.value)}
-                                                className="w-full bg-background/80 border border-border rounded-xl pl-8 pr-4 py-3 text-sm text-foreground placeholder:text-muted-foreground/50 focus:outline-none focus:border-primary/60 transition-all" />
-                                        </div>
-                                        <p className="text-muted-foreground text-xs mt-2">Minimum: $10 | Maximum: $100,000</p>
-                                    </div>
-
-                                    <div className="bg-secondary/30 rounded-xl px-4 py-3 space-y-2 text-xs">
-                                        <div className="flex justify-between"><span className="text-muted-foreground">Network</span><span className="text-foreground font-medium">{selectedChain.name}</span></div>
-                                        <div className="flex justify-between"><span className="text-muted-foreground">You send</span><span className="text-foreground font-medium">~{(Number(depositAmount || 0) / 50000).toFixed(4)} {selectedChain.symbol}</span></div>
-                                        <div className="flex justify-between"><span className="text-muted-foreground">Network fee</span><span className="text-foreground font-medium">Auto-calculated</span></div>
-                                    </div>
-                                </>
-                            ) : (
-                                <>
-                                    <div>
-                                        <label htmlFor="receipt-amt" className="block text-sm font-medium text-foreground mb-2">Deposit Amount (USD)</label>
-                                        <div className="relative">
-                                            <span className="absolute left-4 top-1/2 -translate-y-1/2 text-muted-foreground font-semibold">$</span>
-                                            <input id="receipt-amt" type="number" placeholder="500" value={depositAmount}
-                                                onChange={e => setDepositAmount(e.target.value)}
-                                                className="w-full bg-background/80 border border-border rounded-xl pl-8 pr-4 py-3 text-sm text-foreground placeholder:text-muted-foreground/50 focus:outline-none focus:border-primary/60 transition-all" />
-                                        </div>
-                                        <p className="text-muted-foreground text-xs mt-2">Minimum: $50 | Maximum: $50,000</p>
-                                    </div>
-
-                                    <div className="bg-secondary/30 rounded-xl px-4 py-3 space-y-1 text-xs">
-                                        <div className="flex justify-between"><span className="text-muted-foreground">Deposit Amount</span><span className="text-foreground font-medium">${Number(depositAmount || 0).toFixed(2)}</span></div>
-                                        <div className="flex justify-between"><span className="text-muted-foreground">Processing</span><span className="text-foreground font-medium">24-48 hours</span></div>
-                                    </div>
-                                </>
-                            )}
+                            <div className="bg-secondary/30 rounded-xl px-4 py-3 space-y-2 text-xs">
+                                <div className="flex justify-between"><span className="text-muted-foreground">Network</span><span className="text-foreground font-medium">{selectedChain.name}</span></div>
+                                <div className="flex justify-between"><span className="text-muted-foreground">You send</span><span className="text-foreground font-medium">~{(Number(depositAmount || 0) / 50000).toFixed(4)} {selectedChain.symbol}</span></div>
+                                <div className="flex justify-between"><span className="text-muted-foreground">Network fee</span><span className="text-foreground font-medium">Auto-calculated</span></div>
+                            </div>
 
                             <button onClick={() => depositAmount ? setDepositStep('details') : toast.error('Enter an amount')}
                                 disabled={!depositAmount}
@@ -293,115 +235,70 @@ export default function Wallet() {
                         </div>
                     )}
 
-                    {/* STEP 3: Show deposit details & upload receipt */}
-                    {depositStep === 'details' && depositMethod && (
+                    {/* STEP 3: Send crypto & confirm */}
+                    {depositStep === 'details' && depositMethod === 'crypto' && (
                         <div className="space-y-4">
                             {/* Deposit info card */}
                             <div className="bg-card/60 backdrop-blur-md border border-border/60 rounded-2xl p-6 space-y-5">
                                 <div className="flex items-center justify-between">
-                                    <h3 className="font-heading text-lg font-semibold text-foreground">Send Payment</h3>
+                                    <h3 className="font-heading text-lg font-semibold text-foreground">Send Crypto</h3>
                                     <span className="text-primary text-xs font-semibold bg-primary/10 px-3 py-1 rounded-full">Step 2 of 2</span>
                                 </div>
 
-                                {depositMethod === 'crypto' ? (
-                                    <>
-                                        <div className="space-y-4">
-                                            <div>
-                                                <p className="text-sm text-muted-foreground mb-2">Send exactly this amount to the address below:</p>
-                                                <div className="bg-secondary/40 border border-primary/30 rounded-xl px-4 py-3">
-                                                    <p className="text-2xl font-bold text-foreground">{(Number(depositAmount || 0) / 50000).toFixed(4)} {selectedChain.symbol}</p>
-                                                    <p className="text-muted-foreground text-xs mt-1">≈ ${depositAmount}</p>
-                                                </div>
-                                            </div>
-
-                                            <div>
-                                                <p className="text-sm text-muted-foreground mb-2">To this address:</p>
-                                                <div className="flex items-center gap-2 bg-background/80 border border-border rounded-xl px-4 py-3">
-                                                    <code className="text-xs text-muted-foreground font-mono flex-1 break-all">{address}</code>
-                                                    <CopyBtn text={address} />
-                                                </div>
-                                            </div>
-
-                                            <div>
-                                                <button onClick={() => setShowQr(!showQr)}
-                                                    className="w-full flex items-center justify-center gap-2 bg-secondary hover:bg-secondary/80 text-foreground px-4 py-2.5 rounded-xl text-sm font-medium transition-colors">
-                                                    <QrCode className="w-4 h-4" />
-                                                    {showQr ? 'Hide QR Code' : 'Show QR Code'}
-                                                </button>
-                                                {showQr && (
-                                                    <div className="flex justify-center py-4">
-                                                        <div className="bg-white p-3 rounded-xl">
-                                                            <img src={qrUrl(address)} alt="QR Code" className="w-40 h-40" />
-                                                        </div>
-                                                    </div>
-                                                )}
-                                            </div>
-
-                                            <div className="flex items-start gap-2 bg-amber-500/5 border border-amber-500/20 rounded-xl px-4 py-3">
-                                                <span className="text-amber-400 text-sm flex-shrink-0 mt-0.5">⚠</span>
-                                                <p className="text-amber-400/80 text-xs leading-relaxed">{selectedChain.warning}</p>
-                                            </div>
-
-                                            <div className="bg-secondary/30 rounded-xl px-4 py-3 space-y-1 text-xs">
-                                                <div className="flex justify-between"><span className="text-muted-foreground">Network</span><span className="text-foreground font-medium">{selectedChain.name}</span></div>
-                                                <div className="flex justify-between"><span className="text-muted-foreground">Confirmations needed</span><span className="text-foreground font-medium">{selectedChain.id === 'btc' ? '3' : selectedChain.id === 'sol' ? '32' : '12'}</span></div>
-                                                <div className="flex justify-between"><span className="text-muted-foreground">Estimated time</span><span className="text-foreground font-medium">{selectedChain.id === 'btc' ? '30-60 min' : selectedChain.id === 'sol' ? '< 1 min' : '3-5 min'}</span></div>
-                                            </div>
-                                        </div>
-                                    </>
-                                ) : (
-                                    <div className="space-y-4">
+                                <div className="space-y-4">
+                                    <div>
+                                        <p className="text-sm text-muted-foreground mb-2">Send exactly this amount to the address below:</p>
                                         <div className="bg-secondary/40 border border-primary/30 rounded-xl px-4 py-3">
-                                            <p className="text-2xl font-bold text-foreground">${depositAmount}</p>
-                                            <p className="text-muted-foreground text-xs mt-1">Total deposit amount</p>
+                                            <p className="text-2xl font-bold text-foreground">{(Number(depositAmount || 0) / 50000).toFixed(4)} {selectedChain.symbol}</p>
+                                            <p className="text-muted-foreground text-xs mt-1">≈ ${depositAmount}</p>
                                         </div>
-                                        <p className="text-sm text-muted-foreground">Make the transfer using your bank account or credit card. Upload the proof of payment below.</p>
                                     </div>
-                                )}
-                            </div>
 
-                            {/* Upload receipt section */}
-                            <div className="bg-card/60 backdrop-blur-md border border-border/60 rounded-2xl p-6 space-y-5">
-                                <h3 className="font-heading text-base font-semibold text-foreground">Upload Payment Proof</h3>
+                                    <div>
+                                        <p className="text-sm text-muted-foreground mb-2">To this address:</p>
+                                        <div className="flex items-center gap-2 bg-background/80 border border-border rounded-xl px-4 py-3">
+                                            <code className="text-xs text-muted-foreground font-mono flex-1 break-all">{address}</code>
+                                            <CopyBtn text={address} />
+                                        </div>
+                                    </div>
 
-                                <div>
-                                    <label htmlFor="final-receipt" className="block text-sm font-medium text-foreground mb-3">Receipt / Transaction Screenshot</label>
-                                    <div className="relative">
-                                        <input id="final-receipt" type="file" accept=".pdf,.jpg,.jpeg,.png,.webp"
-                                            onChange={e => setReceiptFile(e.target.files?.[0] || null)}
-                                            className="hidden" />
-                                        <label htmlFor="final-receipt" className="flex items-center justify-center gap-3 px-4 py-8 border-2 border-dashed border-border/60 rounded-xl hover:border-primary/60 cursor-pointer transition-all bg-secondary/20 hover:bg-secondary/40">
-                                            <Upload className="w-5 h-5 text-muted-foreground" />
-                                            <div className="text-left">
-                                                {receiptFile ? (
-                                                    <>
-                                                        <p className="text-foreground text-sm font-medium">{receiptFile.name}</p>
-                                                        <p className="text-muted-foreground text-xs">{(receiptFile.size / 1024).toFixed(1)} KB</p>
-                                                    </>
-                                                ) : (
-                                                    <>
-                                                        <p className="text-foreground text-sm font-medium">Click to upload or drag and drop</p>
-                                                        <p className="text-muted-foreground text-xs">PDF, JPG, PNG (max 5 MB)</p>
-                                                    </>
-                                                )}
+                                    <div>
+                                        <button onClick={() => setShowQr(!showQr)}
+                                            className="w-full flex items-center justify-center gap-2 bg-secondary hover:bg-secondary/80 text-foreground px-4 py-2.5 rounded-xl text-sm font-medium transition-colors">
+                                            <QrCode className="w-4 h-4" />
+                                            {showQr ? 'Hide QR Code' : 'Show QR Code'}
+                                        </button>
+                                        {showQr && (
+                                            <div className="flex justify-center py-4">
+                                                <div className="bg-white p-3 rounded-xl">
+                                                    <img src={qrUrl(address)} alt="QR Code" className="w-40 h-40" />
+                                                </div>
                                             </div>
-                                        </label>
+                                        )}
+                                    </div>
+
+                                    <div className="flex items-start gap-2 bg-amber-500/5 border border-amber-500/20 rounded-xl px-4 py-3">
+                                        <span className="text-amber-400 text-sm flex-shrink-0 mt-0.5">⚠</span>
+                                        <p className="text-amber-400/80 text-xs leading-relaxed">{selectedChain.warning}</p>
+                                    </div>
+
+                                    <div className="bg-secondary/30 rounded-xl px-4 py-3 space-y-1 text-xs">
+                                        <div className="flex justify-between"><span className="text-muted-foreground">Network</span><span className="text-foreground font-medium">{selectedChain.name}</span></div>
+                                        <div className="flex justify-between"><span className="text-muted-foreground">Confirmations needed</span><span className="text-foreground font-medium">{selectedChain.id === 'btc' ? '3' : selectedChain.id === 'sol' ? '32' : '12'}</span></div>
+                                        <div className="flex justify-between"><span className="text-muted-foreground">Estimated time</span><span className="text-foreground font-medium">{selectedChain.id === 'btc' ? '30-60 min' : selectedChain.id === 'sol' ? '< 1 min' : '3-5 min'}</span></div>
                                     </div>
                                 </div>
+                            </div>
 
-                                <button onClick={handleReceiptUpload} disabled={uploading || !receiptFile}
-                                    className="w-full bg-primary hover:bg-primary/90 disabled:opacity-60 text-primary-foreground px-4 py-3.5 rounded-xl text-sm font-semibold transition-all hover:shadow-lg hover:shadow-primary/25 flex items-center justify-center gap-2">
-                                    {uploading ? (
-                                        <>
-                                            <div className="w-4 h-4 border-2 border-white/30 border-t-white rounded-full animate-spin" />
-                                            Confirming...
-                                        </>
-                                    ) : (
-                                        <>
-                                            <Check className="w-4 h-4" />
-                                            I've Made Payment
-                                        </>
-                                    )}
+                            {/* Confirm payment */}
+                            <div className="bg-card/60 backdrop-blur-md border border-border/60 rounded-2xl p-6 space-y-4">
+                                <h3 className="font-heading text-base font-semibold text-foreground">Payment Sent</h3>
+                                <p className="text-sm text-muted-foreground">Have you sent the crypto to the address above?</p>
+
+                                <button onClick={() => { setCurrentDepositId(`dep-${Date.now()}`); setDepositStep('pending'); toast.success('Deposit recorded! Waiting for blockchain confirmation...'); }}
+                                    className="w-full bg-primary hover:bg-primary/90 text-primary-foreground px-4 py-3.5 rounded-xl text-sm font-semibold transition-all hover:shadow-lg hover:shadow-primary/25 flex items-center justify-center gap-2">
+                                    <Check className="w-4 h-4" />
+                                    Confirm Payment Sent
                                 </button>
                             </div>
                         </div>
@@ -445,7 +342,7 @@ export default function Wallet() {
                                 </div>
                             </div>
 
-                            <button onClick={() => { setDepositMethod(null); setDepositStep('method'); setDepositAmount(''); setReceiptFile(null); setCurrentDepositId(null); }}
+                            <button onClick={() => { setDepositMethod(null); setDepositStep('method'); setDepositAmount(''); setCurrentDepositId(null); }}
                                 className="w-full bg-secondary hover:bg-secondary/80 text-foreground px-4 py-3 rounded-xl text-sm font-semibold transition-colors">
                                 Make Another Deposit
                             </button>

@@ -30,7 +30,7 @@ const Navbar = () => {
   return (
     <nav
       ref={navRef}
-      className={`fixed top-4 left-4 right-4 md:left-8 md:right-8 lg:left-12 lg:right-12 z-50 px-6 md:px-8 py-3.5 flex items-center justify-between rounded-2xl transition-all duration-500 ${scrolled
+      className={`fixed top-2 left-2 right-2 sm:top-4 sm:left-4 sm:right-4 md:left-8 md:right-8 lg:left-12 lg:right-12 z-50 px-3 sm:px-6 md:px-8 py-3.5 flex items-center justify-between rounded-2xl transition-all duration-500 overflow-x-hidden ${scrolled
         ? "bg-background/80 backdrop-blur-xl border border-border/60 shadow-lg shadow-background/50"
         : "bg-background/40 backdrop-blur-md border border-border/20"
         }`}

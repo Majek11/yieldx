@@ -29,7 +29,7 @@ export default function CookieBanner() {
     if (!visible) return null;
 
     return (
-        <div className="fixed bottom-6 left-6 right-6 md:left-auto md:right-6 md:max-w-md z-[100]">
+        <div className="fixed bottom-3 left-3 right-3 sm:bottom-6 sm:left-6 sm:right-6 md:left-auto md:right-6 md:max-w-md z-[100]">
             <div className="bg-card/95 backdrop-blur-xl border border-border/80 rounded-2xl shadow-2xl shadow-background/80 overflow-hidden">
                 {/* Main banner */}
                 {!showDetail ? (
@@ -53,19 +53,19 @@ export default function CookieBanner() {
                         <div className="flex gap-2 flex-wrap">
                             <button
                                 onClick={() => accept("all")}
-                                className="flex-1 bg-primary hover:bg-primary/90 text-primary-foreground px-4 py-2 rounded-xl text-xs font-semibold transition-all"
+                                className="flex-1 min-w-20 bg-primary hover:bg-primary/90 text-primary-foreground px-3 py-2 rounded-xl text-xs font-semibold transition-all"
                             >
                                 Accept all
                             </button>
                             <button
                                 onClick={() => accept("essential")}
-                                className="flex-1 bg-secondary hover:bg-secondary/80 text-muted-foreground hover:text-foreground border border-border px-4 py-2 rounded-xl text-xs font-medium transition-all"
+                                className="flex-1 min-w-20 bg-secondary hover:bg-secondary/80 text-muted-foreground hover:text-foreground border border-border px-3 py-2 rounded-xl text-xs font-medium transition-all"
                             >
                                 Essential only
                             </button>
                             <button
                                 onClick={() => setShowDetail(true)}
-                                className="flex items-center gap-1 text-xs text-muted-foreground hover:text-foreground transition-colors px-2"
+                                className="flex items-center gap-1 text-xs text-muted-foreground hover:text-foreground transition-colors px-2 flex-shrink-0"
                             >
                                 <Settings2 className="w-3.5 h-3.5" /> Customise
                             </button>

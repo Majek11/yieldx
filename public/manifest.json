@@ -1,0 +1,70 @@
+{
+    "name": "YieldX — Crypto Investment",
+    "short_name": "YieldX",
+    "description": "AI-powered crypto investment platform with institutional-grade DeFi strategies",
+    "start_url": "/dashboard",
+    "display": "standalone",
+    "background_color": "#080b18",
+    "theme_color": "#7C3AED",
+    "orientation": "portrait-primary",
+    "icons": [
+        {
+            "src": "/logo.svg",
+            "sizes": "any",
+            "type": "image/svg+xml",
+            "purpose": "any"
+        },
+        {
+            "src": "/icon-192.png",
+            "sizes": "192x192",
+            "type": "image/png",
+            "purpose": "any maskable"
+        },
+        {
+            "src": "/icon-512.png",
+            "sizes": "512x512",
+            "type": "image/png",
+            "purpose": "any maskable"
+        }
+    ],
+    "screenshots": [],
+    "shortcuts": [
+        {
+            "name": "Dashboard",
+            "short_name": "Home",
+            "url": "/dashboard",
+            "icons": [
+                {
+                    "src": "/icon-192.png",
+                    "sizes": "192x192"
+                }
+            ]
+        },
+        {
+            "name": "Deposit",
+            "short_name": "Deposit",
+            "url": "/wallet",
+            "icons": [
+                {
+                    "src": "/icon-192.png",
+                    "sizes": "192x192"
+                }
+            ]
+        },
+        {
+            "name": "Invest",
+            "short_name": "Invest",
+            "url": "/invest",
+            "icons": [
+                {
+                    "src": "/icon-192.png",
+                    "sizes": "192x192"
+                }
+            ]
+        }
+    ],
+    "categories": [
+        "finance",
+        "business"
+    ]
+}

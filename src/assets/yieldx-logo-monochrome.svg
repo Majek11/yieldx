@@ -1,0 +1,18 @@
+<svg viewBox="0 0 240 240" xmlns="http://www.w3.org/2000/svg">
+  <!-- Purple Circle Ring -->
+  <circle cx="120" cy="120" r="95" fill="none" stroke="#7C3AED" stroke-width="24" stroke-linecap="round"/>
+  
+  <!-- S-Curve Arrow Path (Monochrome Purple) -->
+  <g transform="translate(120, 120)">
+    <!-- Smooth S-curve line -->
+    <path d="M -50 30 Q -30 0 0 -15 Q 30 -25 50 -35" 
+          fill="none" 
+          stroke="#7C3AED" 
+          stroke-width="14" 
+          stroke-linecap="round"
+          stroke-linejoin="round"/>
+  </g>
+  
+  <!-- Dot (Monochrome Purple) -->
+  <circle cx="170" cy="85" r="12" fill="#7C3AED"/>
+</svg>

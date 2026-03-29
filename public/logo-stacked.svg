@@ -1,0 +1,24 @@
+<svg viewBox="0 0 240 480" xmlns="http://www.w3.org/2000/svg">
+  <!-- Logo Mark -->
+  <g transform="translate(0, 40)">
+    <!-- Purple Circle Ring -->
+    <circle cx="120" cy="120" r="95" fill="none" stroke="#7C3AED" stroke-width="24" stroke-linecap="round"/>
+    
+    <!-- S-Curve Arrow Path -->
+    <g transform="translate(120, 120)">
+      <!-- Smooth S-curve line -->
+      <path d="M -50 30 Q -30 0 0 -15 Q 30 -25 50 -35" 
+            fill="none" 
+            stroke="#7C3AED" 
+            stroke-width="14" 
+            stroke-linecap="round"
+            stroke-linejoin="round"/>
+    </g>
+    
+    <!-- Emerald Green Dot -->
+    <circle cx="170" cy="85" r="12" fill="#10B981"/>
+  </g>
+  
+  <!-- Text "YieldX" stacked below -->
+  <text x="120" y="340" font-family="Syne, sans-serif" font-size="72" font-weight="600" text-anchor="middle" fill="#1e1b4b" letter-spacing="-1">YieldX</text>
+</svg>
